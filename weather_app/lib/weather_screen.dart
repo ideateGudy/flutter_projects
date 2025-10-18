@@ -25,7 +25,7 @@ class _WeatherScreenState extends State<WeatherScreen> {
   // NEW: State to track if the input field is visible
   bool _isSearching = false;
 
-  Future<void> getWeatherForecast() async {
+  Future<Map<String, dynamic>> getWeatherForecast() async {
     setState(() {
       isLoading = true;
     });
@@ -68,6 +68,7 @@ class _WeatherScreenState extends State<WeatherScreen> {
         isLoading = false;
       });
     }
+    return forecastData ?? {};
   }
 
   @override
