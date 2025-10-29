@@ -20,9 +20,10 @@ class _WeatherScreenState extends State<WeatherScreen> {
   bool isLoading = true;
   String city = "ugbolu";
 
-  // NEW: Controller for the text field
+  //  Controller for the text field
   final TextEditingController _cityController = TextEditingController();
-  // NEW: State to track if the input field is visible
+
+  // State to track if the input field is visible
   bool _isSearching = false;
 
   Future<Map<String, dynamic>> getWeatherForecast() async {
@@ -208,7 +209,7 @@ class _WeatherScreenState extends State<WeatherScreen> {
                     // When the user submits (hits enter)
                     if (value.isNotEmpty) {
                       setState(() {
-                        city = value; // Update the city
+                        city = value; // Update the city name
                         _isSearching = false; // Close the search bar
                       });
                       getWeatherForecast(); // Fetch new weather
