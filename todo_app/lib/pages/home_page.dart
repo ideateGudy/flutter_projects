@@ -44,6 +44,29 @@ class _HomePageState extends State<HomePage> {
     db.updateDatabase();
   }
 
+  void saveEditTask(int index) {
+    setState(() {
+      db.todoList.removeAt(index);
+      db.todoList.add([_myController.text, false]);
+      _myController.clear();
+    });
+    Navigator.of(context).pop();
+    db.updateDatabase();
+  }
+
+  void editTodoTask(int index) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return DialogBox(
+          controller: _myController,
+          onSave: () => saveEditTask(index),
+          onCancel: () => Navigator.of(context).pop(),
+        );
+      },
+    );
+  }
+
   void createNewTask() {
     showDialog(
       context: context,
@@ -88,6 +111,7 @@ class _HomePageState extends State<HomePage> {
             taskCompleted: taskCompleted,
             onChanged: (value) => checkBoxChanged(value, index),
             deleteFunction: (context) => deleteTask(index),
+            editTodo: () => editTodoTask(index),
           );
         },
       ),
