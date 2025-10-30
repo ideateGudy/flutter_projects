@@ -10,6 +10,7 @@ class TodoDatabase {
       ["My Todo", true],
       ["Click on the plus sign (+) to add a new todo", false],
       ["Double tap on a todo item to edit it", false],
+      ["Swipe task left and click on delete to remove a task from list", false],
     ];
   }
 
