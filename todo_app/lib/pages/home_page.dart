@@ -46,9 +46,11 @@ class _HomePageState extends State<HomePage> {
 
   void saveEditTask(int index) {
     setState(() {
-      db.todoList.removeAt(index);
-      db.todoList.add([_myController.text, false]);
-      _myController.clear();
+      // db.todoList.removeAt(index);
+      // db.todoList.add([_myController.text, false]);
+
+      db.todoList[index] = [_myController.text, false];
+      // _myController.clear();
     });
     Navigator.of(context).pop();
     db.updateDatabase();

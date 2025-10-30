@@ -8,8 +8,8 @@ class TodoDatabase {
   void createInitialData() {
     todoList = [
       ["My Todo", true],
-      ["Second Todo", false],
-      ["Testing", true],
+      ["Click on the plus sign (+) to add a new todo", false],
+      ["Double tap on a todo item to edit it", false],
     ];
   }
 
