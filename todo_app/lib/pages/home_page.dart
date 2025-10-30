@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:todo_app/components/dialog_box.dart';
 import 'package:todo_app/components/todo_tile.dart';
+import 'package:todo_app/data/database.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -10,25 +12,36 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final TextEditingController _myController = TextEditingController();
+  final _myBox = Hive.box('mybox');
+  TodoDatabase db = TodoDatabase();
 
-  List todoList = [
-    ["My Todo", true],
-    ["Second Todo", false],
-  ];
+  @override
+  void initState() {
+    //first time opening the app (nothing saved yet)
+    if (_myBox.get("TODOLIST") == null) {
+      db.createInitialData();
+    } else {
+      db.loadData();
+    }
+    super.initState();
+  }
+
+  final TextEditingController _myController = TextEditingController();
 
   void checkBoxChanged(bool? value, int index) {
     setState(() {
-      todoList[index][1] = !todoList[index][1];
+      db.todoList[index][1] = !db.todoList[index][1];
     });
+    db.updateDatabase();
   }
 
   void saveNewTask() {
     setState(() {
-      todoList.add([_myController.text, false]);
+      db.todoList.add([_myController.text, false]);
       _myController.clear();
     });
     Navigator.of(context).pop();
+    db.updateDatabase();
   }
 
   void createNewTask() {
@@ -46,8 +59,9 @@ class _HomePageState extends State<HomePage> {
 
   void deleteTask(int index) {
     setState(() {
-      todoList.removeAt(index);
+      db.todoList.removeAt(index);
     });
+    db.updateDatabase();
   }
 
   @override
@@ -65,10 +79,10 @@ class _HomePageState extends State<HomePage> {
         child: Icon(Icons.add),
       ),
       body: ListView.builder(
-        itemCount: todoList.length,
+        itemCount: db.todoList.length,
         itemBuilder: (context, index) {
-          final taskName = todoList[index][0];
-          final taskCompleted = todoList[index][1];
+          final taskName = db.todoList[index][0];
+          final taskCompleted = db.todoList[index][1];
           return TodoTile(
             taskName: taskName,
             taskCompleted: taskCompleted,
