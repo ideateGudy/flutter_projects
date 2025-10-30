@@ -71,6 +71,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   void createNewTask() {
+    _myController.clear();
     showDialog(
       context: context,
       builder: (context) {
@@ -88,6 +89,12 @@ class _HomePageState extends State<HomePage> {
       db.todoList.removeAt(index);
     });
     db.updateDatabase();
+  }
+
+  @override
+  void dispose() {
+    _myController.dispose();
+    super.dispose();
   }
 
   @override
