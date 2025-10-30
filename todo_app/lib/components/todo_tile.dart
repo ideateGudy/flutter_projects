@@ -13,7 +13,7 @@ class TodoTile extends StatelessWidget {
     required this.taskCompleted,
     required this.onChanged,
     required this.deleteFunction,
-    required this.editTodo
+    required this.editTodo,
   });
 
   @override
@@ -43,12 +43,14 @@ class TodoTile extends StatelessWidget {
             child: Row(
               children: [
                 Checkbox(value: taskCompleted, onChanged: onChanged),
-                Text(
-                  taskName,
-                  style: TextStyle(
-                    decoration: taskCompleted
-                        ? TextDecoration.lineThrough
-                        : TextDecoration.none,
+                Expanded(
+                  child: Text(
+                    taskName,
+                    style: TextStyle(
+                      decoration: taskCompleted
+                          ? TextDecoration.lineThrough
+                          : TextDecoration.none,
+                    ),
                   ),
                 ),
               ],

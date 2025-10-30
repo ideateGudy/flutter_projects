@@ -36,23 +36,28 @@ class _HomePageState extends State<HomePage> {
   }
 
   void saveNewTask() {
-    setState(() {
-      db.todoList.add([_myController.text, false]);
-      _myController.clear();
-    });
-    Navigator.of(context).pop();
-    db.updateDatabase();
+    if (_myController.text.isNotEmpty) {
+      setState(() {
+        db.todoList.add([_myController.text, false]);
+        _myController.clear();
+      });
+      Navigator.of(context).pop();
+      db.updateDatabase();
+    }
   }
 
   void saveEditTask(int index) {
-    setState(() {
-      db.todoList[index] = [_myController.text, false];
-    });
-    Navigator.of(context).pop();
-    db.updateDatabase();
+    if (_myController.text.isNotEmpty) {
+      setState(() {
+        db.todoList[index] = [_myController.text, false];
+      });
+      Navigator.of(context).pop();
+      db.updateDatabase();
+    }
   }
 
   void editTodoTask(int index) {
+    _myController.text = db.todoList[index][0];
     showDialog(
       context: context,
       builder: (context) {
