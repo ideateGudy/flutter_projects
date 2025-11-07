@@ -15,7 +15,7 @@ class IntroPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               //logo
-              Image.asset("assets/images/nike.png", height: 240),
+              Image.asset("assets/logo/nike.png", height: 240),
               SizedBox(height: 48),
 
               //title
