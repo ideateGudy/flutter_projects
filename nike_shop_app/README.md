@@ -105,16 +105,5 @@ Run `flutter pub outdated` to inspect newer versions when updating dependencies.
 - Run `flutter analyze` and `flutter test` locally before opening a PR.
 - Verify assets load and main screens render.
 - Keep changes small and targeted; this repo is used for learning and UI experimentation.
-
-## License
-
-This is a small demo project — no license file is included. Add one if you plan to publish or share widely.
-
+  
 ---
-
-If you want, I can also:
-
-- Add a CONTRIBUTING.md with a PR checklist.
-- Add a CI workflow (GitHub Actions) that runs `flutter analyze` and `flutter test` on PRs.
-
-Tell me which of those you'd like and I will implement it.
