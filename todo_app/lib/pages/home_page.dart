@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:provider/provider.dart';
 import 'package:todo_app/components/dialog_box.dart';
 import 'package:todo_app/components/todo_tile.dart';
 import 'package:todo_app/data/database.dart';
+import 'package:todo_app/theme/theme.dart';
+import 'package:todo_app/theme/theme_provider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -23,6 +26,7 @@ class _HomePageState extends State<HomePage> {
     } else {
       db.loadData();
     }
+    
     super.initState();
   }
 
@@ -99,16 +103,37 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = context.watch<ThemeProvider>();
+
+    // Check if current theme is dark
+    final bool isDarkMode = themeProvider.themeData == darkMode;
     return Scaffold(
-      backgroundColor: Colors.yellow[200],
+      // backgroundColor: Colors.yellow[900],
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: Colors.yellow,
+        backgroundColor: Theme.of(context).colorScheme.primary,
         title: Text("TO DO", style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
+        actions: [
+          Row(
+            children: [
+              const Icon(Icons.light_mode),
+              Switch(
+                value: isDarkMode,
+                onChanged: (value) {
+                  context.read<ThemeProvider>().toggleTheme();
+                },
+              ),
+              const Icon(Icons.dark_mode),
+              const SizedBox(width: 10),
+            ],
+          ),
+        ],
       ),
+
       floatingActionButton: FloatingActionButton(
         onPressed: createNewTask,
-        backgroundColor: Colors.yellow,
+        backgroundColor: Theme.of(context).colorScheme.primary,
         child: Icon(Icons.add),
       ),
       body: ListView.builder(
