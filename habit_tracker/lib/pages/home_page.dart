@@ -152,9 +152,27 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    // Get current month and year for AppBar
+    final now = DateTime.now();
+    final monthNames = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ];
+    final monthYear = '${monthNames[now.month - 1]} ${now.year}';
+
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
-      appBar: AppBar(),
+      appBar: AppBar(title: Text(monthYear), centerTitle: true),
       drawer: const MyDrawer(),
       floatingActionButton: FloatingActionButton(
         onPressed: createNewHabit,

@@ -8,9 +8,16 @@ class MyHeatMap extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Get current month and year
+    final now = DateTime.now();
+
+    // Calculate start and end dates for current month
+    final monthStartDate = DateTime(now.year, now.month, 1);
+    final monthEndDate = DateTime(now.year, now.month + 1, 0);
+
     return HeatMap(
-      startDate: startDate,
-      endDate: DateTime.now(),
+      startDate: monthStartDate,
+      endDate: monthEndDate,
       datasets: datasets,
       colorMode: ColorMode.color,
       defaultColor: Theme.of(context).colorScheme.secondary,
