@@ -1,18 +1,46 @@
-import 'package:isar/isar.dart';
-
-// Run the command to generate the code:
-// run: dart run build_runner build
-part 'habit.g.dart';
-@Collection()
+/// Habit Model Class
+///
+/// Represents a single habit with:
+/// - id: Unique identifier (UUID)
+/// - name: The habit name (e.g., "Morning Exercise")
+/// - completedDays: List of dates when completed
 class Habit {
-  //habit id
-  Id id = Isar.autoIncrement;
+  /// Unique identifier for the habit (UUID v4)
+  final String id;
 
-  //habit name
-  late String name;
+  /// Name of the habit (what the user wants to track)
+  String name;
 
-  //completed days
-  List<DateTime> completedDays = [
-    // DateTime (year, month, day)
-  ];
+  /// List of dates when this habit was completed
+  /// Dates are stored as DateTime with only year/month/day (no time)
+  List<DateTime> completedDays;
+
+  /// Constructor
+  Habit({required this.id, required this.name, this.completedDays = const []});
+
+  /// Convert Habit to Map for storing in Hive
+  /// DateTime objects are converted to ISO 8601 strings
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'name': name,
+      'completedDays': completedDays
+          .map((date) => date.toIso8601String())
+          .toList(),
+    };
+  }
+
+  /// Create Habit from Map retrieved from Hive
+  /// ISO 8601 strings are converted back to DateTime
+  factory Habit.fromMap(Map<dynamic, dynamic> map) {
+    return Habit(
+      id: map['id'] as String,
+      name: map['name'] as String,
+      completedDays:
+          (map['completedDays'] as List<dynamic>?)
+              ?.map((date) => DateTime.parse(date as String))
+              .toList() ??
+          [],
+    );
+  }
 }

@@ -32,7 +32,10 @@ class _HomePageState extends State<HomePage> {
         title: const Text('Create New Habit'),
         content: TextField(
           controller: _habitController,
-          decoration: const InputDecoration(hintText: 'Create a new habit'),
+          decoration: const InputDecoration(
+            hintText: 'Type here',
+            hintStyle: TextStyle(color: Colors.grey),
+          ),
         ),
         actions: [
           MaterialButton(
