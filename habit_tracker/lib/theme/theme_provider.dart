@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:habit_tracker/database/habit_database.dart';
 import 'package:habit_tracker/theme/dark_mode.dart';
 
 import 'light_mode.dart';
@@ -27,5 +28,19 @@ class ThemeProvider extends ChangeNotifier {
       _themeData = lightMode;
     }
     notifyListeners();
+    // Save theme to database
+    _saveTheme();
+  }
+
+  // Load theme from database
+  Future<void> loadTheme() async {
+    final isDark = await HabitDatabase.getTheme();
+    _themeData = isDark ? darkMode : lightMode;
+    notifyListeners();
+  }
+
+  // Save theme to database
+  Future<void> _saveTheme() async {
+    await HabitDatabase.saveTheme(isDarkMode);
   }
 }

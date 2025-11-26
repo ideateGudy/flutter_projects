@@ -60,6 +60,28 @@ class HabitDatabase extends ChangeNotifier {
     return null;
   }
 
+  /// Save the theme preference
+  /// true = dark mode, false = light mode
+  static Future<void> saveTheme(bool isDarkMode) async {
+    final settingsMap = settingsBox.get('appSettings');
+    if (settingsMap != null) {
+      final settings = AppSettings.fromMap(settingsMap);
+      settings.isDarkMode = isDarkMode;
+      await settingsBox.put('appSettings', settings.toMap());
+    }
+  }
+
+  /// Get the saved theme preference
+  /// Returns false (light mode) if not saved
+  static Future<bool> getTheme() async {
+    final settingsMap = settingsBox.get('appSettings');
+    if (settingsMap != null) {
+      final settings = AppSettings.fromMap(settingsMap);
+      return settings.isDarkMode;
+    }
+    return false;
+  }
+
   // ============================================================================
   // IN-MEMORY DATA
   // ============================================================================
@@ -158,6 +180,34 @@ class HabitDatabase extends ChangeNotifier {
     if (habitMap != null) {
       final habit = Habit.fromMap(habitMap);
       habit.name = newName;
+      await habitsBox.put(id, habit.toMap());
+    }
+
+    await readHabits(); // Sync UI
+  }
+
+  /// UPDATE: Stop a habit (hide from today's list but retain history)
+  /// When a habit is stopped, it won't appear in tomorrow's checklist
+  /// but its completion history and heatmap are preserved
+  Future<void> stopHabit(String id) async {
+    final habitMap = habitsBox.get(id);
+    if (habitMap != null) {
+      final habit = Habit.fromMap(habitMap);
+      habit.isActive = false;
+      habit.stoppedDate = DateTime.now();
+      await habitsBox.put(id, habit.toMap());
+    }
+
+    await readHabits(); // Sync UI
+  }
+
+  /// UPDATE: Resume a stopped habit
+  Future<void> resumeHabit(String id) async {
+    final habitMap = habitsBox.get(id);
+    if (habitMap != null) {
+      final habit = Habit.fromMap(habitMap);
+      habit.isActive = true;
+      habit.stoppedDate = null;
       await habitsBox.put(id, habit.toMap());
     }
 

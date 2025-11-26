@@ -7,6 +7,8 @@ class MyHabitTile extends StatelessWidget {
   final Function(bool?)? onChanged;
   final Function(BuildContext)? editHabit;
   final Function(BuildContext)? deleteHabit;
+  final Function(BuildContext)? stopHabit;
+
   const MyHabitTile({
     super.key,
     required this.habitName,
@@ -14,6 +16,7 @@ class MyHabitTile extends StatelessWidget {
     required this.onChanged,
     required this.editHabit,
     required this.deleteHabit,
+    this.stopHabit,
   });
 
   @override
@@ -27,16 +30,26 @@ class MyHabitTile extends StatelessWidget {
             //edit option
             SlidableAction(
               onPressed: editHabit,
-              backgroundColor: Colors.grey.shade800,
+              backgroundColor: Colors.blue,
               icon: Icons.settings,
               borderRadius: BorderRadius.circular(8),
             ),
+
+            //stop option
+            if (stopHabit != null)
+              SlidableAction(
+                onPressed: stopHabit,
+                backgroundColor: Colors.orange,
+                icon: Icons.pause,
+                borderRadius: BorderRadius.circular(8),
+              ),
 
             //delete option
             SlidableAction(
               onPressed: deleteHabit,
               backgroundColor: Colors.red,
               icon: Icons.delete,
+              borderRadius: BorderRadius.circular(8),
             ),
           ],
         ),

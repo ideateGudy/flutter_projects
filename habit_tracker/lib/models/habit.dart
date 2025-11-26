@@ -4,6 +4,8 @@
 /// - id: Unique identifier (UUID)
 /// - name: The habit name (e.g., "Morning Exercise")
 /// - completedDays: List of dates when completed
+/// - isActive: Whether the habit is currently active (stopped habits retain history)
+/// - stoppedDate: The date when the habit was stopped (null if never stopped)
 class Habit {
   /// Unique identifier for the habit (UUID v4)
   final String id;
@@ -15,8 +17,21 @@ class Habit {
   /// Dates are stored as DateTime with only year/month/day (no time)
   List<DateTime> completedDays;
 
+  /// Whether this habit is currently active
+  /// When false, habit won't show on next day but retains history and heatmap
+  bool isActive;
+
+  /// The date when this habit was stopped (null if still active or never stopped)
+  DateTime? stoppedDate;
+
   /// Constructor
-  Habit({required this.id, required this.name, this.completedDays = const []});
+  Habit({
+    required this.id,
+    required this.name,
+    this.completedDays = const [],
+    this.isActive = true,
+    this.stoppedDate,
+  });
 
   /// Convert Habit to Map for storing in Hive
   /// DateTime objects are converted to ISO 8601 strings
@@ -27,6 +42,8 @@ class Habit {
       'completedDays': completedDays
           .map((date) => date.toIso8601String())
           .toList(),
+      'isActive': isActive,
+      'stoppedDate': stoppedDate?.toIso8601String(),
     };
   }
 
@@ -41,6 +58,10 @@ class Habit {
               ?.map((date) => DateTime.parse(date as String))
               .toList() ??
           [],
+      isActive: map['isActive'] as bool? ?? true,
+      stoppedDate: map['stoppedDate'] != null
+          ? DateTime.parse(map['stoppedDate'] as String)
+          : null,
     );
   }
 }

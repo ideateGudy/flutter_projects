@@ -18,10 +18,14 @@ void main() async {
   final db = HabitDatabase();
   await db.saveFirstLaunchDate();
 
+  // Load saved theme
+  final themeProvider = ThemeProvider();
+  await themeProvider.loadTheme();
+
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context) => ThemeProvider()),
+        ChangeNotifierProvider.value(value: themeProvider),
         ChangeNotifierProvider(create: (context) => HabitDatabase()),
       ],
       child: const MyApp(),
