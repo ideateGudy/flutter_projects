@@ -2,6 +2,8 @@
 //is the habit completed today?
 import 'package:habit_tracker/models/habit.dart';
 
+enum RepeatType { daily, custom }
+
 bool isHabitCompletedToday(List<DateTime> completedDays) {
   final today = DateTime.now();
   return completedDays.any(

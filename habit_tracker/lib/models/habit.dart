@@ -24,6 +24,11 @@ class Habit {
   /// The date when this habit was stopped (null if still active or never stopped)
   DateTime? stoppedDate;
 
+  /// Repeat days of the week.
+/// Values follow DateTime.weekday: 1=Mon, 7=Sun.
+/// Empty list = daily (default)
+  List<int> repeatDays;
+
   /// Constructor
   Habit({
     required this.id,
@@ -31,6 +36,7 @@ class Habit {
     this.completedDays = const [],
     this.isActive = true,
     this.stoppedDate,
+    this.repeatDays = const [], // means daily by default
   });
 
   /// Convert Habit to Map for storing in Hive
@@ -44,6 +50,7 @@ class Habit {
           .toList(),
       'isActive': isActive,
       'stoppedDate': stoppedDate?.toIso8601String(),
+      'repeatDays': repeatDays,
     };
   }
 
@@ -62,6 +69,11 @@ class Habit {
       stoppedDate: map['stoppedDate'] != null
           ? DateTime.parse(map['stoppedDate'] as String)
           : null,
+      /// fallback to empty list (daily)
+      repeatDays: (map['repeatDays'] as List<dynamic>?)
+              ?.map((d) => d as int)
+              .toList() ??
+          [],
     );
   }
 }

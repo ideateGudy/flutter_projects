@@ -51,45 +51,139 @@ class _HomePageState extends State<HomePage> {
 
   //text controller
   final TextEditingController _habitController = .new();
+  final List<String> weekDays = [
+    "Mon",
+    "Tue",
+    "Wed",
+    "Thu",
+    "Fri",
+    "Sat",
+    "Sun",
+  ];
+  List<int> selectedDays = []; // 1-7
+
   //create a new habit
   void createNewHabit() {
+    List<int> tempSelectedDays = [];
+    RepeatType repeatType = RepeatType.daily;
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Create New Habit'),
-        content: TextField(
-          controller: _habitController,
-          decoration: const InputDecoration(
-            hintText: 'Type here',
-            hintStyle: TextStyle(color: Colors.grey),
-          ),
-        ),
-        actions: [
-          MaterialButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _habitController.clear();
-            },
-            child: const Text('Cancel', style: TextStyle(color: Colors.red)),
-          ),
-          MaterialButton(
-            onPressed: () {
-              //get the habit text
-              String habitText = _habitController.text;
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) => AlertDialog(
+            title: const Text('Create New Habit'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: _habitController,
+                  decoration: const InputDecoration(hintText: 'Habit name'),
+                ),
+                const SizedBox(height: 20),
 
-              //save the habit to database
-              context.read<HabitDatabase>().addHabit(habitText);
+                // 1️⃣ Repeat Type
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.blueAccent,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  padding: const EdgeInsets.all(8),
+                  child: const Text(
+                    "Repeat",
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      backgroundColor: Colors.blueAccent,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8, // horizontal spacing between buttons
+                  runSpacing: 4, // vertical spacing if it wraps
+                  children: [
+                    ChoiceChip(
+                      label: const Text("Daily"),
+                      selected: repeatType == RepeatType.daily,
+                      selectedColor: Colors.blueAccent,
+                      onSelected: (_) {
+                        setState(() {
+                          repeatType = RepeatType.daily;
+                          tempSelectedDays.clear();
+                        });
+                      },
+                    ),
+                    const SizedBox(width: 8),
+                    ChoiceChip(
+                      label: const Text("Custom"),
+                      selected: repeatType == RepeatType.custom,
+                      selectedColor: Colors.blueAccent,
+                      onSelected: (_) {
+                        setState(() => repeatType = RepeatType.custom);
+                      },
+                    ),
+                  ],
+                ),
 
-              //close the dialog
-              Navigator.pop(context);
+                const SizedBox(height: 12),
 
-              //clear the text field
-              _habitController.clear();
-            },
-            child: const Text('Save', style: TextStyle(color: Colors.blue)),
+                // 2️⃣ Custom Day Selector (only visible when custom)
+                if (repeatType == RepeatType.custom)
+                  Wrap(
+                    spacing: 8,
+                    children: List.generate(7, (i) {
+                      final dayNumber = i + 1;
+                      final isSelected = tempSelectedDays.contains(dayNumber);
+
+                      return ChoiceChip(
+                        label: Text(weekDays[i]),
+                        selected: isSelected,
+                        onSelected: (value) {
+                          setState(() {
+                            if (value) {
+                              tempSelectedDays.add(dayNumber);
+                            } else {
+                              tempSelectedDays.remove(dayNumber);
+                            }
+                          });
+                        },
+                      );
+                    }),
+                  ),
+              ],
+            ),
+
+            actions: [
+              TextButton(
+                child: const Text(
+                  'Cancel',
+                  style: TextStyle(color: Colors.red),
+                ),
+                onPressed: () {
+                  Navigator.pop(context);
+                  _habitController.clear();
+                },
+              ),
+              TextButton(
+                child: const Text('Save', style: TextStyle(color: Colors.blue)),
+                onPressed: () {
+                  final name = _habitController.text;
+
+                  context.read<HabitDatabase>().addHabitWithRepeat(
+                    name,
+                    repeatType == RepeatType.daily ? [] : tempSelectedDays,
+                  );
+
+                  Navigator.pop(context);
+                  _habitController.clear();
+                },
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -103,47 +197,132 @@ class _HomePageState extends State<HomePage> {
 
   //edit habit
   void editHabit(Habit habit) {
-    //set the current habit name to the text controller
     _habitController.text = habit.name;
-    //show dialog to edit habit
+
+    List<int> tempSelectedDays = List.from(habit.repeatDays);
+
+    RepeatType repeatType = habit.repeatDays.isEmpty
+        ? RepeatType.daily
+        : RepeatType.custom;
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Edit Habit'),
-        content: TextField(
-          controller: _habitController,
-          decoration: const InputDecoration(hintText: 'Edit your habit'),
-        ),
-        actions: [
-          MaterialButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _habitController.clear();
-            },
-            child: const Text('Cancel', style: TextStyle(color: Colors.red)),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) => AlertDialog(
+            title: const Text('Edit Habit'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: _habitController,
+                  decoration: const InputDecoration(hintText: 'Habit name'),
+                ),
+                const SizedBox(height: 20),
+
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.blueAccent,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  padding: const EdgeInsets.all(8),
+                  child: const Text(
+                    "Repeat",
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      backgroundColor: Colors.blueAccent,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8, // horizontal spacing between buttons
+                  runSpacing: 4, // vertical spacing if it wraps
+                  children: [
+                    ChoiceChip(
+                      label: const Text("Daily"),
+                      selected: repeatType == RepeatType.daily,
+                      selectedColor: Colors.blueAccent,
+                      onSelected: (_) {
+                        setState(() {
+                          repeatType = RepeatType.daily;
+                          tempSelectedDays.clear();
+                        });
+                      },
+                    ),
+                    const SizedBox(width: 8),
+                    ChoiceChip(
+                      label: const Text("Custom"),
+                      selected: repeatType == RepeatType.custom,
+                      selectedColor: Colors.blueAccent,
+                      onSelected: (_) {
+                        setState(() => repeatType = RepeatType.custom);
+                      },
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 12),
+
+                // custom weekday selector
+                if (repeatType == RepeatType.custom)
+                  Wrap(
+                    spacing: 8,
+                    children: List.generate(7, (i) {
+                      final dayNum = i + 1;
+                      final selected = tempSelectedDays.contains(dayNum);
+                      return ChoiceChip(
+                        label: Text(weekDays[i]),
+                        selected: selected,
+                        onSelected: (value) {
+                          setState(() {
+                            if (value) {
+                              tempSelectedDays.add(dayNum);
+                            } else {
+                              tempSelectedDays.remove(dayNum);
+                            }
+                          });
+                        },
+                      );
+                    }),
+                  ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                child: const Text(
+                  'Cancel',
+                  style: TextStyle(color: Colors.red),
+                ),
+                onPressed: () {
+                  Navigator.pop(context);
+                  _habitController.clear();
+                },
+              ),
+              TextButton(
+                child: const Text(
+                  'Update',
+                  style: TextStyle(color: Colors.blue),
+                ),
+                onPressed: () {
+                  final name = _habitController.text;
+
+                  context.read<HabitDatabase>().updateHabit(
+                    habit.id,
+                    name,
+                    repeatType == RepeatType.daily ? [] : tempSelectedDays,
+                  );
+
+                  Navigator.pop(context);
+                  _habitController.clear();
+                },
+              ),
+            ],
           ),
-          MaterialButton(
-            onPressed: () {
-              //get the updated habit text
-              String updatedHabitText = _habitController.text;
-
-              //update the habit in database
-              habit.name = updatedHabitText;
-              context.read<HabitDatabase>().updateHabitName(
-                habit.id,
-                updatedHabitText,
-              );
-
-              //close the dialog
-              Navigator.pop(context);
-
-              //clear the text field
-              _habitController.clear();
-            },
-            child: const Text('Update', style: TextStyle(color: Colors.blue)),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -324,6 +503,11 @@ class _HomePageState extends State<HomePage> {
     List<Habit> habits = habitDatabase.habits.where((h) => h.isActive).where((
       h,
     ) {
+      final shouldAppearToday =
+          h.repeatDays.isEmpty || h.repeatDays.contains(now.weekday);
+
+      if (!shouldAppearToday) return false;
+
       // If viewing current month, show all active habits
       if (displayedMonth.year == currentMonth.year &&
           displayedMonth.month == currentMonth.month) {
@@ -373,6 +557,7 @@ class _HomePageState extends State<HomePage> {
         return MyHabitTile(
           habitName: habit.name,
           isCompleted: isCompleted,
+          repeatDays: habit.repeatDays,
           onChanged: (value) => checkHabitOnOff(value, habit),
           editHabit: (context) => editHabit(habit),
           deleteHabit: (context) => deleteHabit(habit),

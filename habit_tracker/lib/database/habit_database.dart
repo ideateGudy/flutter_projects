@@ -113,6 +113,19 @@ class HabitDatabase extends ChangeNotifier {
     await readHabits(); // Sync UI
   }
 
+  Future<void> addHabitWithRepeat(String name, List<int> repeatDays) async {
+  final newHabit = Habit(
+    id: const Uuid().v4(),
+    name: name,
+    completedDays: [],
+    repeatDays: repeatDays,
+  );
+
+  await habitsBox.put(newHabit.id, newHabit.toMap());
+  await readHabits();
+}
+
+
   /// READ: Load all habits from database into memory
   ///
   /// STEPS:
@@ -174,17 +187,22 @@ class HabitDatabase extends ChangeNotifier {
     await readHabits(); // Sync UI
   }
 
-  /// UPDATE: Change a habit's name
-  Future<void> updateHabitName(String id, String newName) async {
-    final habitMap = habitsBox.get(id);
-    if (habitMap != null) {
-      final habit = Habit.fromMap(habitMap);
-      habit.name = newName;
-      await habitsBox.put(id, habit.toMap());
-    }
+  /// UPDATE: Change a habit's name and repeat days
+  Future<void> updateHabit(String id, String newName, List<int> repeatDays) async {
+  final habitMap = habitsBox.get(id);
 
-    await readHabits(); // Sync UI
+  if (habitMap != null) {
+    final habit = Habit.fromMap(habitMap);
+
+    habit.name = newName;
+    habit.repeatDays = repeatDays;
+
+    await habitsBox.put(id, habit.toMap());
   }
+
+  await readHabits(); // Sync UI
+}
+
 
   /// UPDATE: Stop a habit (hide from today's list but retain history)
   /// When a habit is stopped, it won't appear in tomorrow's checklist

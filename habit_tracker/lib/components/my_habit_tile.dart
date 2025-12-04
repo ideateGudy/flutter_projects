@@ -4,6 +4,7 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 class MyHabitTile extends StatelessWidget {
   final String habitName;
   final bool isCompleted;
+  final List<int> repeatDays;
   final Function(bool?)? onChanged;
   final Function(BuildContext)? editHabit;
   final Function(BuildContext)? deleteHabit;
@@ -13,6 +14,7 @@ class MyHabitTile extends StatelessWidget {
     super.key,
     required this.habitName,
     required this.isCompleted,
+    required this.repeatDays,
     required this.onChanged,
     required this.editHabit,
     required this.deleteHabit,
@@ -21,6 +23,7 @@ class MyHabitTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      const weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 25.0),
       child: Slidable(
@@ -72,6 +75,18 @@ class MyHabitTile extends StatelessWidget {
                       ? Colors.white
                       : Theme.of(context).colorScheme.inversePrimary,
                   fontWeight: FontWeight.bold,
+                ),
+              ),
+              // ⭐ Added subtitle showing schedule
+              subtitle: Text(
+                repeatDays.isEmpty
+                    ? "Daily"
+                    : repeatDays
+                        .map((d) => weekDays[d - 1])
+                        .join(" "),
+                style: TextStyle(
+                  color: isCompleted ? Colors.white70 : Colors.grey[400],
+                  fontSize: 14,
                 ),
               ),
               leading: Checkbox(
