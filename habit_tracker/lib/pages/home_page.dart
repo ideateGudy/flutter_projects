@@ -20,10 +20,12 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void initState() {
-    //read the database when the app starts
-    context.read<HabitDatabase>().readHabits();
-    displayMonth = DateTime.now();
     super.initState();
+    displayMonth = DateTime.now();
+    //read the database when the app starts
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<HabitDatabase>().readHabits();
+    });
   }
 
   void _previousMonth() {
