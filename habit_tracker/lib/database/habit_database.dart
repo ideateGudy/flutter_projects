@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:habit_tracker/models/app_settings.dart';
 import 'package:habit_tracker/models/habit.dart';
+import 'package:habit_tracker/services/notification_service.dart';
 import 'package:hive/hive.dart';
 import 'package:uuid/uuid.dart';
 
@@ -82,6 +83,28 @@ class HabitDatabase extends ChangeNotifier {
     return false;
   }
 
+  /// Save the global notification preference
+  /// true = notifications enabled, false = notifications disabled
+  static Future<void> saveNotificationPreference(bool isEnabled) async {
+    final settingsMap = settingsBox.get('appSettings');
+    if (settingsMap != null) {
+      final settings = AppSettings.fromMap(settingsMap);
+      settings.notificationsEnabled = isEnabled;
+      await settingsBox.put('appSettings', settings.toMap());
+    }
+  }
+
+  /// Get the saved global notification preference
+  /// Returns true (notifications enabled) by default
+  static Future<bool> getNotificationPreference() async {
+    final settingsMap = settingsBox.get('appSettings');
+    if (settingsMap != null) {
+      final settings = AppSettings.fromMap(settingsMap);
+      return settings.notificationsEnabled;
+    }
+    return true;
+  }
+
   // ============================================================================
   // IN-MEMORY DATA
   // ============================================================================
@@ -113,18 +136,28 @@ class HabitDatabase extends ChangeNotifier {
     await readHabits(); // Sync UI
   }
 
-  Future<void> addHabitWithRepeat(String name, List<int> repeatDays) async {
-  final newHabit = Habit(
-    id: const Uuid().v4(),
-    name: name,
-    completedDays: [],
-    repeatDays: repeatDays,
-  );
+  Future<void> addHabitWithRepeat(
+    String name,
+    List<int> repeatDays, {
+    int notificationIntervalMinutes = 60,
+    int notificationHour = 9,
+    int notificationMinute = 0,
+    bool notificationsEnabled = true,
+  }) async {
+    final newHabit = Habit(
+      id: const Uuid().v4(),
+      name: name,
+      completedDays: [],
+      repeatDays: repeatDays,
+      notificationIntervalMinutes: notificationIntervalMinutes,
+      notificationHour: notificationHour,
+      notificationMinute: notificationMinute,
+      notificationsEnabled: notificationsEnabled,
+    );
 
-  await habitsBox.put(newHabit.id, newHabit.toMap());
-  await readHabits();
-}
-
+    await habitsBox.put(newHabit.id, newHabit.toMap());
+    await readHabits();
+  }
 
   /// READ: Load all habits from database into memory
   ///
@@ -151,6 +184,7 @@ class HabitDatabase extends ChangeNotifier {
   ///
   /// IF COMPLETED:
   /// - Add today's date to completedDays list (if not already there)
+  /// - Cancel notifications for this habit
   ///
   /// IF NOT COMPLETED:
   /// - Remove today's date from completedDays list
@@ -170,6 +204,9 @@ class HabitDatabase extends ChangeNotifier {
               date.day == today.day,
         )) {
           habit.completedDays.add(todayNormalized);
+
+          // Cancel notifications for this habit when completed
+          await NotificationService().cancelHabitNotification(id);
         }
       } else {
         // Remove today from the list
@@ -188,21 +225,32 @@ class HabitDatabase extends ChangeNotifier {
   }
 
   /// UPDATE: Change a habit's name and repeat days
-  Future<void> updateHabit(String id, String newName, List<int> repeatDays) async {
-  final habitMap = habitsBox.get(id);
+  Future<void> updateHabit(
+    String id,
+    String newName,
+    List<int> repeatDays, {
+    int notificationIntervalMinutes = 60,
+    int notificationHour = 9,
+    int notificationMinute = 0,
+    bool notificationsEnabled = true,
+  }) async {
+    final habitMap = habitsBox.get(id);
 
-  if (habitMap != null) {
-    final habit = Habit.fromMap(habitMap);
+    if (habitMap != null) {
+      final habit = Habit.fromMap(habitMap);
 
-    habit.name = newName;
-    habit.repeatDays = repeatDays;
+      habit.name = newName;
+      habit.repeatDays = repeatDays;
+      habit.notificationIntervalMinutes = notificationIntervalMinutes;
+      habit.notificationHour = notificationHour;
+      habit.notificationMinute = notificationMinute;
+      habit.notificationsEnabled = notificationsEnabled;
 
-    await habitsBox.put(id, habit.toMap());
+      await habitsBox.put(id, habit.toMap());
+    }
+
+    await readHabits(); // Sync UI
   }
-
-  await readHabits(); // Sync UI
-}
-
 
   /// UPDATE: Stop a habit (hide from today's list but retain history)
   /// When a habit is stopped, it won't appear in tomorrow's checklist
@@ -234,7 +282,51 @@ class HabitDatabase extends ChangeNotifier {
 
   /// DELETE: Remove a habit from the database
   Future<void> deleteHabit(String id) async {
+    // Cancel notifications for this habit
+    await NotificationService().cancelHabitNotification(id);
+
     await habitsBox.delete(id);
     await readHabits(); // Sync UI
+  }
+
+  /// Send notifications for all incomplete active habits today
+  /// Used by background tasks to remind user of pending habits
+  Future<void> sendReminderNotificationsForToday() async {
+    final now = DateTime.now();
+    final todayNormalized = DateTime(now.year, now.month, now.day);
+    final notificationService = NotificationService();
+
+    for (var key in habitsBox.keys) {
+      final habitMap = habitsBox.get(key);
+      if (habitMap != null) {
+        final habit = Habit.fromMap(habitMap);
+
+        // Only notify for active habits
+        if (!habit.isActive) continue;
+
+        // Check if habit should appear today
+        final shouldAppearToday =
+            habit.repeatDays.isEmpty || habit.repeatDays.contains(now.weekday);
+        if (!shouldAppearToday) continue;
+
+        // Check if habit is not completed today
+        final isCompletedToday = habit.completedDays.any(
+          (date) =>
+              date.year == todayNormalized.year &&
+              date.month == todayNormalized.month &&
+              date.day == todayNormalized.day,
+        );
+
+        if (!isCompletedToday) {
+          // Send notification
+          await notificationService.sendImmediateNotification(
+            id: habit.id.hashCode,
+            title: 'Habit Reminder',
+            body: 'Complete your habit: ${habit.name}',
+            payload: habit.id,
+          );
+        }
+      }
+    }
   }
 }

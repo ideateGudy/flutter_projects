@@ -25,9 +25,25 @@ class Habit {
   DateTime? stoppedDate;
 
   /// Repeat days of the week.
-/// Values follow DateTime.weekday: 1=Mon, 7=Sun.
-/// Empty list = daily (default)
+  /// Values follow DateTime.weekday: 1=Mon, 7=Sun.
+  /// Empty list = daily (default)
   List<int> repeatDays;
+
+  /// Notification interval in minutes (how often to remind)
+  /// Default: 60 minutes
+  int notificationIntervalMinutes;
+
+  /// Hour of day to start sending notifications (0-23)
+  /// Default: 9 (9 AM)
+  int notificationHour;
+
+  /// Minute of day to start sending notifications (0-59)
+  /// Default: 0
+  int notificationMinute;
+
+  /// Whether notifications are enabled for this habit
+  /// Default: true
+  bool notificationsEnabled;
 
   /// Constructor
   Habit({
@@ -37,6 +53,10 @@ class Habit {
     this.isActive = true,
     this.stoppedDate,
     this.repeatDays = const [], // means daily by default
+    this.notificationIntervalMinutes = 60,
+    this.notificationHour = 9,
+    this.notificationMinute = 0,
+    this.notificationsEnabled = true,
   });
 
   /// Convert Habit to Map for storing in Hive
@@ -51,6 +71,10 @@ class Habit {
       'isActive': isActive,
       'stoppedDate': stoppedDate?.toIso8601String(),
       'repeatDays': repeatDays,
+      'notificationIntervalMinutes': notificationIntervalMinutes,
+      'notificationHour': notificationHour,
+      'notificationMinute': notificationMinute,
+      'notificationsEnabled': notificationsEnabled,
     };
   }
 
@@ -69,11 +93,18 @@ class Habit {
       stoppedDate: map['stoppedDate'] != null
           ? DateTime.parse(map['stoppedDate'] as String)
           : null,
+
       /// fallback to empty list (daily)
-      repeatDays: (map['repeatDays'] as List<dynamic>?)
+      repeatDays:
+          (map['repeatDays'] as List<dynamic>?)
               ?.map((d) => d as int)
               .toList() ??
           [],
+      notificationIntervalMinutes:
+          map['notificationIntervalMinutes'] as int? ?? 60,
+      notificationHour: map['notificationHour'] as int? ?? 9,
+      notificationMinute: map['notificationMinute'] as int? ?? 0,
+      notificationsEnabled: map['notificationsEnabled'] as bool? ?? true,
     );
   }
 }

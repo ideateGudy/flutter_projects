@@ -1,7 +1,7 @@
 /// App Settings Model Class
 ///
 /// Stores application-wide settings
-/// Stores: first launch date (for heatmap), theme preference
+/// Stores: first launch date (for heatmap), theme preference, global notifications preference
 class AppSettings {
   /// Fixed identifier 'app_settings_1'
   /// Only one AppSettings object is stored in the database
@@ -15,11 +15,17 @@ class AppSettings {
   /// true = dark mode, false = light mode
   bool isDarkMode;
 
+  /// Global notifications preference
+  /// true = notifications enabled, false = all notifications disabled
+  /// Individual habits can still have their own notificationsEnabled setting
+  bool notificationsEnabled;
+
   /// Constructor
   AppSettings({
     required this.id,
     this.firstLaunchDate,
     this.isDarkMode = false,
+    this.notificationsEnabled = true,
   });
 
   /// Convert AppSettings to Map for storing in Hive
@@ -28,6 +34,7 @@ class AppSettings {
       'id': id,
       'firstLaunchDate': firstLaunchDate?.toIso8601String(),
       'isDarkMode': isDarkMode,
+      'notificationsEnabled': notificationsEnabled,
     };
   }
 
@@ -39,6 +46,7 @@ class AppSettings {
           ? DateTime.parse(map['firstLaunchDate'] as String)
           : null,
       isDarkMode: map['isDarkMode'] as bool? ?? false,
+      notificationsEnabled: map['notificationsEnabled'] as bool? ?? true,
     );
   }
 }
