@@ -100,7 +100,7 @@ class _NotificationSettingsState extends State<NotificationSettings> {
                           24,
                           (i) => DropdownMenuItem(
                             value: i,
-                            child: Text('${i.toString().padLeft(2, '0')}:00'),
+                            child: Text(i.toString().padLeft(2, '0')),
                           ),
                         ),
                         onChanged: (value) {
@@ -119,14 +119,13 @@ class _NotificationSettingsState extends State<NotificationSettings> {
                       child: DropdownButton<int>(
                         value: selectedMinute,
                         isExpanded: true,
-                        items: [0, 15, 30, 45]
-                            .map(
-                              (i) => DropdownMenuItem(
-                                value: i,
-                                child: Text(i.toString().padLeft(2, '0')),
-                              ),
-                            )
-                            .toList(),
+                        items: List.generate(
+                          60,
+                          (i) => DropdownMenuItem(
+                            value: i,
+                            child: Text(i.toString().padLeft(2, '0')),
+                          ),
+                        ),
                         onChanged: (value) {
                           if (value != null) {
                             setState(() {
@@ -176,9 +175,9 @@ class _NotificationSettingsState extends State<NotificationSettings> {
                 const SizedBox(height: 8),
                 Slider(
                   value: selectedInterval.toDouble(),
-                  min: 15,
+                  min: 1,
                   max: 480, // 8 hours
-                  divisions: 31, // (480-15)/15 = 31
+                  divisions: 479, // 480-1 = 479
                   label: '$selectedInterval min',
                   onChanged: (value) {
                     setState(() {
@@ -190,10 +189,10 @@ class _NotificationSettingsState extends State<NotificationSettings> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
+                    _buildQuickButton('1m', 1),
+                    _buildQuickButton('5m', 5),
                     _buildQuickButton('15m', 15),
-                    _buildQuickButton('30m', 30),
                     _buildQuickButton('1h', 60),
-                    _buildQuickButton('2h', 120),
                   ],
                 ),
               ],

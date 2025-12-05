@@ -4,7 +4,7 @@ import 'package:habit_tracker/pages/home_page.dart';
 import 'package:habit_tracker/theme/theme_provider.dart';
 import 'package:habit_tracker/theme/notification_preference_provider.dart';
 import 'package:habit_tracker/services/notification_service.dart';
-import 'package:habit_tracker/services/background_task_handler.dart';
+import 'package:habit_tracker/services/exact_alarm_scheduler.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 
@@ -36,12 +36,13 @@ void main() async {
     print('Error initializing notifications: $e');
   }
 
-  // Initialize background tasks for habit reminders
+  // Initialize exact alarm scheduler for precise notifications
+  // This schedules background alarms that run even when app is closed
   try {
-    await BackgroundTaskHandler.initialize();
-    await BackgroundTaskHandler.schedulePeriodicHabitCheck();
+    await ExactAlarmScheduler.initialize();
+    await ExactAlarmScheduler.scheduleAllHabitAlarms();
   } catch (e) {
-    print('Error initializing background tasks: $e');
+    print('Error initializing exact alarm scheduler: $e');
   }
 
   runApp(

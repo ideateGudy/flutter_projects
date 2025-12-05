@@ -37,10 +37,10 @@ android {
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
             
-            // Disable minification to prevent R8 stripping workmanager and background task code
-            isMinifyEnabled = false
-            // Disable resource shrinking since minification is disabled
-            isShrinkResources = false
+            // Enable minification for smaller app size
+            isMinifyEnabled = true
+            // Enable resource shrinking with minification
+            isShrinkResources = true
         }
     }
 }

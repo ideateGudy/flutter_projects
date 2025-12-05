@@ -245,7 +245,7 @@ class _ManageHabitsPageState extends State<ManageHabitsPage> {
                     children: [
                       const SizedBox(height: 4),
                       Text(
-                        'Repeat: ${habit.repeatDays.isEmpty ? "Daily" : "Custom (${habit.repeatDays.length} days)"}',
+                        'Repeat: ${habit.repeatDays.isEmpty ? "Daily" : "Custom (${habit.repeatDays.length} ${habit.repeatDays.length == 1 ? "day" : "days"})"}',
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
                       Text(

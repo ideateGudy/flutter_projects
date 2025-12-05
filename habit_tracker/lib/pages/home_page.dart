@@ -6,6 +6,7 @@ import 'package:habit_tracker/components/notification_settings.dart';
 import 'package:habit_tracker/database/habit_database.dart';
 import 'package:habit_tracker/models/habit.dart';
 import 'package:habit_tracker/utils/habit_util.dart';
+import 'package:habit_tracker/services/exact_alarm_scheduler.dart';
 import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
@@ -26,6 +27,8 @@ class _HomePageState extends State<HomePage> {
     //read the database when the app starts
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<HabitDatabase>().readHabits();
+      // Reschedule alarms when app resumes to ensure they're still scheduled
+      ExactAlarmScheduler.rescheduleAllAlarms();
     });
   }
 

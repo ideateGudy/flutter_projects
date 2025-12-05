@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:habit_tracker/models/app_settings.dart';
 import 'package:habit_tracker/models/habit.dart';
 import 'package:habit_tracker/services/notification_service.dart';
+import 'package:habit_tracker/services/exact_alarm_scheduler.dart';
 import 'package:hive/hive.dart';
 import 'package:uuid/uuid.dart';
 
@@ -156,6 +157,10 @@ class HabitDatabase extends ChangeNotifier {
     );
 
     await habitsBox.put(newHabit.id, newHabit.toMap());
+
+    // Schedule exact alarms for this new habit
+    await ExactAlarmScheduler.scheduleHabitNotifications(newHabit);
+
     await readHabits();
   }
 
@@ -207,6 +212,7 @@ class HabitDatabase extends ChangeNotifier {
 
           // Cancel notifications for this habit when completed
           await NotificationService().cancelHabitNotification(id);
+          await ExactAlarmScheduler.onHabitCompleted(id);
         }
       } else {
         // Remove today from the list
@@ -247,6 +253,10 @@ class HabitDatabase extends ChangeNotifier {
       habit.notificationsEnabled = notificationsEnabled;
 
       await habitsBox.put(id, habit.toMap());
+
+      // Reschedule alarms with new settings
+      await ExactAlarmScheduler.cancelHabitAlarms(id);
+      await ExactAlarmScheduler.scheduleHabitNotifications(habit);
     }
 
     await readHabits(); // Sync UI
@@ -262,6 +272,9 @@ class HabitDatabase extends ChangeNotifier {
       habit.isActive = false;
       habit.stoppedDate = DateTime.now();
       await habitsBox.put(id, habit.toMap());
+
+      // Cancel alarms when habit is stopped
+      await ExactAlarmScheduler.cancelHabitAlarms(id);
     }
 
     await readHabits(); // Sync UI
@@ -275,6 +288,9 @@ class HabitDatabase extends ChangeNotifier {
       habit.isActive = true;
       habit.stoppedDate = null;
       await habitsBox.put(id, habit.toMap());
+
+      // Reschedule alarms when habit is resumed
+      await ExactAlarmScheduler.scheduleHabitNotifications(habit);
     }
 
     await readHabits(); // Sync UI
@@ -284,6 +300,7 @@ class HabitDatabase extends ChangeNotifier {
   Future<void> deleteHabit(String id) async {
     // Cancel notifications for this habit
     await NotificationService().cancelHabitNotification(id);
+    await ExactAlarmScheduler.cancelHabitAlarms(id);
 
     await habitsBox.delete(id);
     await readHabits(); // Sync UI
